@@ -1,36 +1,72 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Mixtape & Static
 
-## Getting Started
+A Y2K-styled web app for building a "mixtape" from YouTube tracks, styling it as a
+retro CRT TV + cassette deck, and sharing a link that anyone can play with **no
+login required**.
 
-First, run the development server:
+## Stack
+
+- **Next.js 16** (App Router) + TypeScript
+- **Tailwind CSS v4**
+- **SQLite** via `better-sqlite3` (no accounts, mixtapes keyed by id)
+- **YouTube IFrame Player API** for full-length playback
+- **YouTube Data API v3** for search (server-side proxy keeps the key private)
+
+## Setup
+
+```bash
+npm install
+cp .env.example .env.local
+```
+
+Then edit `.env.local`:
+
+| Variable               | Required | Description                                                      |
+| ---------------------- | -------- | ---------------------------------------------------------------- |
+| `YOUTUBE_API_KEY`      | optional | Google Cloud API key. Without it, search is disabled (demo msg). |
+| `NEXT_PUBLIC_BASE_URL` | optional | Public URL for share links + OG tags. Defaults to localhost.     |
+| `DATA_DIR` / `DB_PATH` | optional | Override the SQLite file location. Defaults to `./data/mixtapes.db`. |
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## How it works
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **`/`** — "burn a tape" creator: search tracks, add/reorder them across two
+  sides (max 15), write a title + note, and save. Saving returns a share URL.
+- **`/tape/[id]`** — receiver view: the tape pre-loaded and playable, no auth.
+  Rendered server-side with Open Graph tags for a nice share preview.
+- **`/api/search?q=…`** — proxies YouTube Data API `search.list` + `videos.list`
+  (for durations). Returns clean track candidates.
+- **`/api/tapes`** (`POST`) — validates and stores a mixtape.
+- **`/api/tapes/[id]`** (`GET`) — fetches a mixtape by id.
 
-## Learn More
+### Playback
 
-To learn more about Next.js, take a look at the following resources:
+The player uses the **YouTube IFrame Player API** (not a bare iframe reload), so
+play/pause/next/prev are real API calls with `onStateChange` events. The video
+stays visibly on-screen (CSS scanline/vignette/flicker/noise overlays are applied,
+but never `display:none` / `opacity:0`), per YouTube's embed terms. Autoplay is
+user-initiated (first play press). On `ended`, playback advances to the next track;
+unavailable/region-blocked videos surface an error message rather than failing the
+whole tape.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Data model
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+Mixtape { id (uuid), title, note, createdAt }
+Track   { order, side ("A"|"B"), videoId, title, artist, durationSeconds, thumbnailUrl }
+```
 
-## Deploy on Vercel
+Mixtapes are read-only once created — the share link itself is the access control.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Notes
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- This is v1. Out of scope: accounts/login, uploading audio, editing a shared
+  tape, native mobile apps.
+- The spec referenced `mixtape_tv_mockup.html` as a visual reference; that file
+  was not present in the repo, so the CRT TV + cassette UI was built from the
+  description in `PROJECT_SPEC.md` §8.
