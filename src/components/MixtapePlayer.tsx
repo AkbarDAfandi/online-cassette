@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { Track } from "@/lib/types";
 import { TvScreen } from "./TvScreen";
 import { CassetteDeck } from "./CassetteDeck";
@@ -9,13 +9,12 @@ import { useYouTubePlayer } from "./player/useYouTubePlayer";
 
 const PLAYER_ID = "yt-player";
 
-function splitTracks(tracks: Track[]) {
-  const sideA: number[] = [];
-  const sideB: number[] = [];
+function sideIndices(tracks: Track[], side: "A" | "B"): number[] {
+  const indices: number[] = [];
   tracks.forEach((t, i) => {
-    (t.side === "A" ? sideA : sideB).push(i);
+    if (t.side === side) indices.push(i);
   });
-  return sideA.length > 0 ? sideA : sideB;
+  return indices;
 }
 
 interface MixtapePlayerProps {
@@ -41,27 +40,33 @@ export function MixtapePlayer({
   const [rawIndex, setRawIndex] = useState(0);
   const wasPlayingRef = useRef(false);
 
-  const playOrder = useMemo(() => splitTracks(tracks), [tracks]);
-
   const currentIndex = tracks.length > 0 ? rawIndex % tracks.length : 0;
   const current = tracks[currentIndex];
   const videoId = current?.videoId ?? null;
 
   const handleNext = useCallback(() => {
     setRawIndex((prev) => {
-      const pos = playOrder.indexOf(prev);
-      const next = playOrder[(pos + 1) % playOrder.length];
+      const cur = tracks[prev] ?? tracks[0];
+      if (!cur) return prev;
+      const order = sideIndices(tracks, cur.side);
+      if (order.length === 0) return prev;
+      const pos = order.indexOf(prev);
+      const next = order[(pos + 1) % order.length];
       return next;
     });
-  }, [playOrder]);
+  }, [tracks]);
 
   const handlePrev = useCallback(() => {
     setRawIndex((prev) => {
-      const pos = playOrder.indexOf(prev);
-      const next = playOrder[(pos - 1 + playOrder.length) % playOrder.length];
+      const cur = tracks[prev] ?? tracks[0];
+      if (!cur) return prev;
+      const order = sideIndices(tracks, cur.side);
+      if (order.length === 0) return prev;
+      const pos = order.indexOf(prev);
+      const next = order[(pos - 1 + order.length) % order.length];
       return next;
     });
-  }, [playOrder]);
+  }, [tracks]);
 
   const { ready, status, loadVideo, play, pause } = useYouTubePlayer({
     containerId: PLAYER_ID,
