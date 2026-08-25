@@ -8,7 +8,7 @@ login required**.
 
 - **Next.js 16** (App Router) + TypeScript
 - **Tailwind CSS v4**
-- **SQLite** via `better-sqlite3` (no accounts, mixtapes keyed by id)
+- **Supabase** (hosted Postgres) — mixtapes stored as a single document keyed by id
 - **YouTube IFrame Player API** for full-length playback
 - **YouTube Data API v3** for search (server-side proxy keeps the key private)
 
@@ -19,13 +19,22 @@ npm install
 cp .env.example .env.local
 ```
 
-Then edit `.env.local`:
+### 1. Create a Supabase project
 
-| Variable               | Required | Description                                                      |
-| ---------------------- | -------- | ---------------------------------------------------------------- |
-| `YOUTUBE_API_KEY`      | optional | Google Cloud API key. Without it, search is disabled (demo msg). |
-| `NEXT_PUBLIC_BASE_URL` | optional | Public URL for share links + OG tags. Defaults to localhost.     |
-| `DATA_DIR` / `DB_PATH` | optional | Override the SQLite file location. Defaults to `./data/mixtapes.db`. |
+Create a project at [supabase.com](https://supabase.com), then run the migration
+in **`supabase/migrations/0001_create_mixtapes.sql`** in the SQL Editor (or link
+the project with the Supabase CLI and run `supabase db push`).
+
+### 2. Configure environment variables
+
+Edit `.env.local`:
+
+| Variable              | Required | Description                                                          |
+| --------------------- | -------- | -------------------------------------------------------------------- |
+| `YOUTUBE_API_KEY`     | optional | Google Cloud API key. Without it, search is disabled (demo msg).     |
+| `NEXT_PUBLIC_BASE_URL`| optional | Public URL for share links + OG tags. Defaults to localhost.         |
+| `SUPABASE_URL`        | required | Project URL from Supabase **Project Settings → API**.                |
+| `SUPABASE_ANON_KEY`   | required | `anon` public key from Supabase **Project Settings → API**.          |
 
 ```bash
 npm run dev
@@ -36,7 +45,8 @@ Open http://localhost:3000.
 ## How it works
 
 - **`/`** — "burn a tape" creator: search tracks, add/reorder them across two
-  sides (max 15), write a title + note, and save. Saving returns a share URL.
+  sides (max 5 per side / 10 total), write a title + note, and save. Saving
+  returns a share URL.
 - **`/tape/[id]`** — receiver view: the tape pre-loaded and playable, no auth.
   Rendered server-side with Open Graph tags for a nice share preview.
 - **`/api/search?q=…`** — proxies YouTube Data API `search.list` + `videos.list`
@@ -57,11 +67,13 @@ whole tape.
 ## Data model
 
 ```
-Mixtape { id (uuid), title, note, createdAt }
+Mixtape { id (uuid), title, note, createdAt, tracks: Track[] }
 Track   { order, side ("A"|"B"), videoId, title, artist, durationSeconds, thumbnailUrl }
 ```
 
-Mixtapes are read-only once created — the share link itself is the access control.
+Stored in a single Supabase row per mixtape, with `tracks` as a `jsonb` column.
+Mixtapes are read-only once created — the share link itself is the access control
+(RLS policies allow public read + insert).
 
 ## Notes
 

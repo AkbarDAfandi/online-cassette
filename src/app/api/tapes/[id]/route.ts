@@ -6,7 +6,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const mixtape = getMixtape(id);
+  const mixtape = await getMixtape(id);
 
   if (!mixtape) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });

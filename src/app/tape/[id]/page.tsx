@@ -9,7 +9,7 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
-  const mixtape = getMixtape(id);
+  const mixtape = await getMixtape(id);
 
   if (!mixtape) {
     return { title: "Tape not found" };
@@ -37,7 +37,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function TapePage({ params }: Props) {
   const { id } = await params;
-  const mixtape = getMixtape(id);
+  const mixtape = await getMixtape(id);
 
   if (!mixtape) {
     notFound();

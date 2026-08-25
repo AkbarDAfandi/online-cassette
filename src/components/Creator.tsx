@@ -304,7 +304,7 @@ export function Creator() {
       <main className="creator-stage">
         <MixtapePlayer
           tracks={tracks}
-          title={title || "My Lofi Mix"}
+          title={title || "Custom Mix"}
           note={note || "by_ you"}
           editable
           onMove={moveTrack}

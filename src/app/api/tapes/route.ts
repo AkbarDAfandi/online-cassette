@@ -74,11 +74,19 @@ export async function POST(request: Request) {
     thumbnailUrl: typeof t.thumbnailUrl === "string" ? t.thumbnailUrl : "",
   }));
 
-  const mixtape = createMixtape({
-    title,
-    note: note || undefined,
-    tracks: normalizedTracks,
-  });
+  let mixtape;
+  try {
+    mixtape = await createMixtape({
+      title,
+      note: note || undefined,
+      tracks: normalizedTracks,
+    });
+  } catch (err) {
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Failed to save" },
+      { status: 500 }
+    );
+  }
 
   return NextResponse.json({ id: mixtape.id, url: `/tape/${mixtape.id}` });
 }
