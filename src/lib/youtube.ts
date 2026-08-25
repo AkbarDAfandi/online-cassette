@@ -72,10 +72,11 @@ export async function searchYouTube(query: string): Promise<SearchResult> {
   }
 
   const data = (await res.json()) as { items?: YouTubeSearchItem[] };
-  const items = data.items ?? [];
-  const videoIds = items
-    .map((i) => i.id.videoId)
-    .filter((id): id is string => Boolean(id));
+  const items = (data.items ?? []).filter(
+    (i): i is YouTubeSearchItem & { id: { videoId: string } } =>
+      i.id.kind === "youtube#video" && Boolean(i.id.videoId)
+  );
+  const videoIds = items.map((i) => i.id.videoId);
 
   if (videoIds.length === 0) {
     return { items: [] };
@@ -100,10 +101,10 @@ export async function searchYouTube(query: string): Promise<SearchResult> {
   }
 
   const results: SearchCandidate[] = items.map((item) => ({
-    videoId: item.id.videoId as string,
+    videoId: item.id.videoId,
     title: cleanTitle(item.snippet.title),
     artist: item.snippet.channelTitle,
-    durationSeconds: durationById.get(item.id.videoId as string) ?? 0,
+    durationSeconds: durationById.get(item.id.videoId) ?? 0,
     thumbnailUrl:
       item.snippet.thumbnails.medium?.url ?? item.snippet.thumbnails.high?.url ?? "",
   }));

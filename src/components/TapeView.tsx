@@ -8,16 +8,31 @@ export function TapeView({ mixtape }: { mixtape: Mixtape }) {
   return (
     <div className="app-shell">
       <header className="header">
-        <span className="logo">Mixtape &amp; Static</span>
-        <Link className="copy-link" href="/">
-          Burn your own →
+        <Link className="logo" href="/">
+          <span>Digital Cassette</span>
+          <em>Player</em>
         </Link>
+        <span className="window-controls" aria-hidden="true">
+          <span>?</span>
+          <span>⚙</span>
+          <span>−</span>
+          <span>□</span>
+          <span>×</span>
+        </span>
       </header>
-      <MixtapePlayer
-        tracks={mixtape.tracks}
-        title={mixtape.title}
-        note={mixtape.note}
-      />
+
+      <main className="player-stage">
+        <MixtapePlayer
+          tracks={mixtape.tracks}
+          title={mixtape.title}
+          note={mixtape.note}
+        />
+      </main>
+
+      <footer className="footer">
+        <span>Mixtape &amp; Static</span>
+        <span>Made with the Digital Cassette Player</span>
+      </footer>
     </div>
   );
 }

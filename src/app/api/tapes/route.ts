@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { createMixtape } from "@/lib/db";
 import type { Side, Track } from "@/lib/types";
 
-const MAX_TRACKS = 15;
+const MAX_TRACKS = 10;
+const MAX_PER_SIDE = 5;
 
 interface SaveBody {
   title: string;
@@ -35,6 +36,15 @@ export async function POST(request: Request) {
   if (tracks.length > MAX_TRACKS) {
     return NextResponse.json(
       { error: `Maximum ${MAX_TRACKS} tracks` },
+      { status: 400 }
+    );
+  }
+
+  const sideACount = tracks.filter((t) => t.side === "A").length;
+  const sideBCount = tracks.filter((t) => t.side === "B").length;
+  if (sideACount > MAX_PER_SIDE || sideBCount > MAX_PER_SIDE) {
+    return NextResponse.json(
+      { error: `Maximum ${MAX_PER_SIDE} tracks per side` },
       { status: 400 }
     );
   }

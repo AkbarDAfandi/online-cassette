@@ -4,7 +4,8 @@ import { useCallback, useState } from "react";
 import type { SearchCandidate, SearchResult, Track } from "@/lib/types";
 import { MixtapePlayer } from "./MixtapePlayer";
 
-const MAX_TRACKS = 15;
+const MAX_TRACKS = 10;
+const MAX_PER_SIDE = 5;
 
 function formatDuration(seconds: number): string {
   if (!seconds || !isFinite(seconds)) return "--:--";
@@ -27,6 +28,9 @@ export function Creator() {
   const [error, setError] = useState<string | null>(null);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
 
+  const sideACount = tracks.filter((t) => t.side === "A").length;
+  const sideBCount = tracks.filter((t) => t.side === "B").length;
+
   const runSearch = useCallback(async () => {
     const q = query.trim();
     if (!q) return;
@@ -46,13 +50,20 @@ export function Creator() {
     }
   }, [query]);
 
+  const sideIsFull = (side: "A" | "B") =>
+    tracks.filter((t) => t.side === side).length >= MAX_PER_SIDE;
+
   const addTrack = (candidate: SearchCandidate) => {
     if (tracks.length >= MAX_TRACKS) return;
-    const side: "A" | "B" =
-      tracks.filter((t) => t.side === "A").length <=
-      tracks.filter((t) => t.side === "B").length
-        ? "A"
-        : "B";
+    const aFull = sideIsFull("A");
+    const bFull = sideIsFull("B");
+    if (aFull && bFull) return;
+    const aCount = tracks.filter((t) => t.side === "A").length;
+    const bCount = tracks.filter((t) => t.side === "B").length;
+    let side: "A" | "B";
+    if (aFull) side = "B";
+    else if (bFull) side = "A";
+    else side = aCount <= bCount ? "A" : "B";
     const track: Track = {
       order: tracks.length,
       side,
@@ -84,11 +95,15 @@ export function Creator() {
   };
 
   const toggleSide = (index: number) => {
-    setTracks((prev) =>
-      prev.map((t, i) =>
-        i === index ? { ...t, side: t.side === "A" ? "B" : "A" } : t
-      )
-    );
+    setTracks((prev) => {
+      const track = prev[index];
+      if (!track) return prev;
+      const target = track.side === "A" ? "B" : "A";
+      if (prev.filter((t) => t.side === target).length >= MAX_PER_SIDE) {
+        return prev;
+      }
+      return prev.map((t, i) => (i === index ? { ...t, side: target } : t));
+    });
   };
 
   const save = async () => {
@@ -142,119 +157,161 @@ export function Creator() {
     }
   };
 
+  const clearAll = () => {
+    setTracks([]);
+    setTitle("");
+    setNote("");
+    setShareUrl(null);
+    setError(null);
+  };
+
   return (
     <div className="creator-grid">
-      <div className="panel">
-        <h2 className="panel-title">Build your tape</h2>
-
-        <div className="search-row">
-          <input
-            className="input"
-            placeholder="Search songs… (title or artist)"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") runSearch();
-            }}
-          />
-          <button className="btn" onClick={runSearch} disabled={searching}>
-            {searching ? "…" : "Search"}
-          </button>
-        </div>
-
-        {searchMessage && <p className="search-hint">{searchMessage}</p>}
-
-        <div className="search-results">
-          {results.map((r) => (
-            <div className="search-result" key={r.videoId}>
-              {r.thumbnailUrl && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  className="search-result-thumb"
-                  src={r.thumbnailUrl}
-                  alt=""
-                  loading="lazy"
-                />
-              )}
-              <div className="search-result-meta">
-                <div className="search-result-title">{r.title}</div>
-                <div className="search-result-artist">
-                  {r.artist} · {formatDuration(r.durationSeconds)}
-                </div>
-              </div>
-              <button
-                className="btn search-result-add"
-                onClick={() => addTrack(r)}
-                disabled={tracks.length >= MAX_TRACKS}
-              >
-                Add
-              </button>
-            </div>
-          ))}
-        </div>
-
-        <div className="creator-actions">
-          <div className="field">
-            <label className="field-label">Tape title</label>
-            <input
-              className="input"
-              placeholder="e.g. Summer '99"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-            />
-          </div>
-          <div className="field">
-            <label className="field-label">Note (optional)</label>
-            <textarea
-              className="input"
-              placeholder="A note on the cassette insert…"
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-            />
-          </div>
-
-          {error && <p className="error-text">{error}</p>}
-
-          <button
-            className="btn btn-primary"
-            onClick={save}
-            disabled={saving || tracks.length === 0}
-          >
-            {saving ? "Burning…" : "Burn this tape"}
-          </button>
-
+      <aside className="panel creator-sidebar">
+        <section className="creator-step search-step">
+          <h2 className="panel-title">
+            <span className="step-badge">1</span>
+            Search music
+          </h2>
           <p className="search-hint">
-            {tracks.length}/{MAX_TRACKS} tracks · two sides
+            Search your favorite songs from YouTube
           </p>
 
-          {shareUrl && (
-            <div className="share-box">
-              <div className="field-label">Your tape is ready</div>
-              <div className="share-link">
-                <input className="input" readOnly value={shareUrl} />
-                <button className="btn" onClick={copyLink}>
-                  Copy
+          <div className="search-row">
+            <input
+              className="input"
+              placeholder="lofi hip hop"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") runSearch();
+              }}
+            />
+            <button className="btn" onClick={runSearch} disabled={searching}>
+              {searching ? "…" : "Search"}
+            </button>
+          </div>
+
+          {searchMessage && <p className="search-hint">{searchMessage}</p>}
+
+          <div className="search-results">
+            {results.length === 0 && (
+              <div className="search-empty">
+                Search for a track to load cassette-ready results.
+              </div>
+            )}
+            {results.map((r) => (
+              <div className="search-result" key={r.videoId}>
+                {r.thumbnailUrl && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    className="search-result-thumb"
+                    src={r.thumbnailUrl}
+                    alt=""
+                    loading="lazy"
+                  />
+                )}
+                <div className="search-result-meta">
+                  <div className="search-result-title">{r.title}</div>
+                  <div className="search-result-artist">
+                    {r.artist}
+                  </div>
+                </div>
+                <span className="search-result-time">
+                  {formatDuration(r.durationSeconds)}
+                </span>
+                <button
+                  className="btn search-result-add"
+                  onClick={() => addTrack(r)}
+                  disabled={tracks.length >= MAX_TRACKS}
+                >
+                  +
                 </button>
               </div>
-              <p className="search-hint">
-                <a className="copy-link" href={shareUrl}>
-                  Open your tape →
-                </a>
-              </p>
-            </div>
-          )}
-        </div>
-      </div>
+            ))}
+          </div>
+        </section>
 
-      <MixtapePlayer
-        tracks={tracks}
-        title={title || "Untitled"}
-        note={note || undefined}
-        editable
-        onMove={moveTrack}
-        onRemove={removeTrack}
-        onToggleSide={toggleSide}
-      />
+        <section className="creator-step share-panel">
+          <h2 className="panel-title">
+            <span className="step-badge">2</span>
+            Share cassette
+          </h2>
+          <p className="search-hint">
+            Name your cassette, save it, then copy the share link.
+          </p>
+
+          <div className="share-form">
+            <div className="field">
+              <label className="field-label">Cassette title</label>
+              <input
+                className="input"
+                placeholder="Untitled Cassette"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
+            </div>
+            <div className="field">
+              <label className="field-label">Creator note</label>
+              <input
+                className="input"
+                placeholder="by_ you"
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+              />
+            </div>
+
+            <div className="share-panel-meta">
+              <span>{tracks.length}/{MAX_TRACKS} tracks loaded</span>
+              <span>A {sideACount}/{MAX_PER_SIDE} · B {sideBCount}/{MAX_PER_SIDE}</span>
+            </div>
+
+            {error && <p className="error-text">{error}</p>}
+
+            <div className="save-row">
+              <button className="btn btn-ghost" onClick={clearAll}>
+                Clear all
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={save}
+                disabled={saving || tracks.length === 0}
+              >
+                {saving ? "Saving…" : "Save cassette"}
+              </button>
+            </div>
+
+            {shareUrl && (
+              <div className="share-box">
+                <div className="field-label">Your cassette is ready</div>
+                <div className="share-link">
+                  <input className="input" readOnly value={shareUrl} />
+                  <button className="btn" onClick={copyLink}>
+                    Copy
+                  </button>
+                </div>
+                <p className="search-hint">
+                  <a className="copy-link" href={shareUrl}>
+                    Open your cassette →
+                  </a>
+                </p>
+              </div>
+            )}
+          </div>
+        </section>
+      </aside>
+
+      <main className="creator-stage">
+        <MixtapePlayer
+          tracks={tracks}
+          title={title || "My Lofi Mix"}
+          note={note || "by_ you"}
+          editable
+          onMove={moveTrack}
+          onRemove={removeTrack}
+          onToggleSide={toggleSide}
+        />
+      </main>
     </div>
   );
 }

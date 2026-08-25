@@ -95,16 +95,19 @@ export function CassetteDeck({
         </div>
       </div>
 
-      <div className="deck-transport">
-        <button className="deck-btn" onClick={onPrev} aria-label="Previous track">
-          ◀◀
-        </button>
+      <div className="deck-play-control">
         <button
           className="deck-btn deck-btn-play"
           onClick={onPlayPause}
           aria-label={playing ? "Pause" : "Play"}
         >
           {playing ? "❚❚" : "▶"}
+        </button>
+      </div>
+
+      <div className="deck-transport">
+        <button className="deck-btn" onClick={onPrev} aria-label="Previous track">
+          ◀◀
         </button>
         <button className="deck-btn" onClick={onNext} aria-label="Next track">
           ▶▶

@@ -115,6 +115,8 @@ export function useYouTubePlayer(options: {
 }) {
   const { containerId, onEnded, onStateChange } = options;
   const playerRef = useRef<YTPlayer | null>(null);
+  const readyRef = useRef(false);
+  const pendingVideoRef = useRef<string | null>(null);
   const [ready, setReady] = useState(false);
   const [status, setStatus] = useState<PlayerStatus>({ state: "unstarted" });
 
@@ -143,7 +145,13 @@ export function useYouTubePlayer(options: {
           events: {
             onReady: (event) => {
               playerRef.current = event.target;
+              readyRef.current = true;
               if (!cancelled) setReady(true);
+              if (pendingVideoRef.current) {
+                const id = pendingVideoRef.current;
+                pendingVideoRef.current = null;
+                event.target.loadVideoById(id);
+              }
             },
             onStateChange: (event) => {
               const state = mapPlayerState(event.data);
@@ -182,7 +190,11 @@ export function useYouTubePlayer(options: {
 
   const loadVideo = useCallback((videoId: string) => {
     setStatus({ state: "unstarted" });
-    playerRef.current?.loadVideoById(videoId);
+    if (readyRef.current && playerRef.current) {
+      playerRef.current.loadVideoById(videoId);
+    } else {
+      pendingVideoRef.current = videoId;
+    }
   }, []);
 
   const play = useCallback(() => {

@@ -11,10 +11,23 @@ export default function Home() {
   return (
     <div className="app-shell">
       <header className="header">
-        <span className="logo">Mixtape &amp; Static</span>
-        <span className="search-hint">burn a tape · share a link · no login</span>
+        <span className="logo">
+          <span>Digital Cassette</span>
+          <em>Creator</em>
+        </span>
+        <span className="window-controls" aria-hidden="true">
+          <span>?</span>
+          <span>⚙</span>
+          <span>−</span>
+          <span>□</span>
+          <span>×</span>
+        </span>
       </header>
       <Creator />
+      <footer className="footer">
+        <span>Mixtape &amp; Static</span>
+        <span>Burn a tape · share a link · no login</span>
+      </footer>
     </div>
   );
 }

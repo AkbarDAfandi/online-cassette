@@ -22,9 +22,21 @@ export function TvScreen({
       <div className="absolute inset-0 bg-black">
         <div id={playerContainerId} className="absolute inset-0" />
         {!nowPlaying.videoId && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-6 text-center">
-            <div className="crt-standby-text">
-              {power === "off" ? "NO SIGNAL" : "PRESS PLAY"}
+          <div className="crt-preview">
+            <div className="crt-preview-top">
+              <span>DIGITAL CASSETTE<br />PREVIEW</span>
+              <span>--:-- / --:--</span>
+            </div>
+            <div className="crt-preview-center">
+              <div className="crt-preview-title">
+                {power === "off" ? "NO SIGNAL" : nowPlaying.title}
+              </div>
+              <div className="crt-preview-artist">{nowPlaying.artist}</div>
+              <div className="crt-preview-play">▶ PLAY</div>
+            </div>
+            <div className="crt-preview-bottom">
+              <span>SP</span>
+              <span>00:00:00</span>
             </div>
           </div>
         )}

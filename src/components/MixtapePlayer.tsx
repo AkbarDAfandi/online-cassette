@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Track } from "@/lib/types";
 import { TvScreen } from "./TvScreen";
 import { CassetteDeck } from "./CassetteDeck";
@@ -39,6 +39,7 @@ export function MixtapePlayer({
 }: MixtapePlayerProps) {
   const [powered, setPowered] = useState(true);
   const [rawIndex, setRawIndex] = useState(0);
+  const wasPlayingRef = useRef(false);
 
   const playOrder = useMemo(() => splitTracks(tracks), [tracks]);
 
@@ -82,6 +83,23 @@ export function MixtapePlayer({
     }
   }, [ready, current, status.state, play, pause]);
 
+  const handleSwitchSide = useCallback(() => {
+    if (!current || tracks.length === 0) return;
+    const target = current.side === "A" ? "B" : "A";
+    const idx = tracks.findIndex((t) => t.side === target);
+    if (idx !== -1) {
+      wasPlayingRef.current = status.state === "playing";
+      setRawIndex(idx);
+    }
+  }, [current, tracks, status.state]);
+
+  useEffect(() => {
+    if (status.state === "playing" && wasPlayingRef.current) {
+      wasPlayingRef.current = false;
+      play();
+    }
+  }, [status.state, play]);
+
   return (
     <div className="mixtape-player">
       <div className="player-top">
@@ -90,8 +108,8 @@ export function MixtapePlayer({
           playerContainerId={PLAYER_ID}
           nowPlaying={{
             videoId,
-            title: current?.title ?? "",
-            artist: current?.artist ?? "",
+            title: current?.title ?? title,
+            artist: current?.artist ?? note ?? "by_ you",
           }}
         />
         <CassetteDeck
@@ -123,7 +141,7 @@ export function MixtapePlayer({
           editable={editable}
           onMove={onMove}
           onRemove={onRemove}
-          onToggleSide={onToggleSide}
+          onToggleSide={editable ? onToggleSide : handleSwitchSide}
         />
       </div>
     </div>
