@@ -4,8 +4,8 @@ import { useCallback, useState } from "react";
 import type { SearchCandidate, SearchResult, Track } from "@/lib/types";
 import { MixtapePlayer } from "./MixtapePlayer";
 
-const MAX_TRACKS = 10;
-const MAX_PER_SIDE = 5;
+const MAX_TRACKS = 20;
+const MAX_PER_SIDE = 10;
 
 function formatDuration(seconds: number): string {
   if (!seconds || !isFinite(seconds)) return "--:--";

@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { createMixtape } from "@/lib/db";
 import type { Side, Track } from "@/lib/types";
 
-const MAX_TRACKS = 10;
-const MAX_PER_SIDE = 5;
+const MAX_TRACKS = 20;
+const MAX_PER_SIDE = 10;
 
 interface SaveBody {
   title: string;
