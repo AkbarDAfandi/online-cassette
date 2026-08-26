@@ -127,6 +127,8 @@ export function MixtapePlayer({
           title={current?.title ?? ""}
           artist={current?.artist ?? ""}
           durationSeconds={current?.durationSeconds ?? 0}
+          tapeTitle={title}
+          creator={note ?? ""}
           onPlayPause={handlePlayPause}
           onNext={handleNext}
           onPrev={handlePrev}
@@ -135,10 +137,6 @@ export function MixtapePlayer({
       </div>
 
       <div className="player-bottom">
-        <div className="tape-info">
-          <h1 className="tape-title">{title}</h1>
-          {note && <p className="tape-note">{note}</p>}
-        </div>
         <TrackList
           tracks={tracks}
           currentIndex={currentIndex}

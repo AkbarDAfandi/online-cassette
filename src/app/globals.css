@@ -1508,7 +1508,8 @@ body {
 .deck-reel-window {
   grid-column: 2;
   grid-row: 1;
-  height: 92px;
+  position: relative;
+  height: 110px;
   margin: 0;
   gap: clamp(70px, 14vw, 150px);
   border-radius: 8px;
@@ -1520,6 +1521,31 @@ body {
     inset 0 0 0 10px rgba(0, 0, 0, 0.48),
     inset 0 0 0 1px rgba(255, 255, 255, 0.16),
     0 0 0 12px rgba(0, 0, 0, 0.22);
+}
+
+.deck-case-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 26px 40px 0;
+  z-index: 1;
+}
+
+.deck-case-title {
+  color: #f6f4ee;
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.6);
+}
+
+.deck-case-creator {
+  color: rgba(240, 244, 255, 0.68);
+  font-size: 0.72rem;
 }
 
 .deck-reel-window::before {

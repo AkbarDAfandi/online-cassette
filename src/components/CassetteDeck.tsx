@@ -20,6 +20,8 @@ interface DeckProps {
   title: string;
   artist: string;
   durationSeconds: number;
+  tapeTitle: string;
+  creator: string;
   onPlayPause: () => void;
   onNext: () => void;
   onPrev: () => void;
@@ -36,13 +38,13 @@ export function CassetteDeck({
   title,
   artist,
   durationSeconds,
+  tapeTitle,
+  creator,
   onPlayPause,
   onNext,
   onPrev,
   onPower,
 }: DeckProps) {
-  const spinning = powered && playing;
-
   return (
     <div className={`deck ${powered ? "deck-on" : "deck-off"}`}>
       <div className="deck-topline">
@@ -53,19 +55,9 @@ export function CassetteDeck({
       </div>
 
       <div className="deck-reel-window">
-        <div className={`reel reel-left ${spinning ? "is-spinning" : ""}`}>
-          <div className="reel-hub" />
-          <div className="reel-spoke s1" />
-          <div className="reel-spoke s2" />
-          <div className="reel-spoke s3" />
-          <div className="reel-spoke s4" />
-        </div>
-        <div className={`reel reel-right ${spinning ? "is-spinning" : ""}`}>
-          <div className="reel-hub" />
-          <div className="reel-spoke s1" />
-          <div className="reel-spoke s2" />
-          <div className="reel-spoke s3" />
-          <div className="reel-spoke s4" />
+        <div className="deck-case-label">
+          <Marquee className="deck-case-title" text={tapeTitle || "NO TAPE"} />
+          <Marquee className="deck-case-creator" text={creator} />
         </div>
         <div className="deck-tape-line" />
       </div>
