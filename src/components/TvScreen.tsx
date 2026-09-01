@@ -10,15 +10,17 @@ export interface NowPlaying {
 
 export function TvScreen({
   power,
+  booting = false,
   playerContainerId,
   nowPlaying,
 }: {
   power: "on" | "off";
+  booting?: boolean;
   playerContainerId: string;
   nowPlaying: NowPlaying;
 }) {
   return (
-    <CrtScreen power={power}>
+    <CrtScreen power={power} booting={booting}>
       <div className="absolute inset-0 bg-black">
         <div id={playerContainerId} className="absolute inset-0" />
         {!nowPlaying.videoId && (

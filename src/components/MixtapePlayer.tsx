@@ -22,6 +22,7 @@ interface MixtapePlayerProps {
   title: string;
   note?: string;
   editable?: boolean;
+  autoplay?: boolean;
   onMove?: (from: number, to: number) => void;
   onRemove?: (index: number) => void;
   onToggleSide?: (index: number) => void;
@@ -32,17 +33,21 @@ export function MixtapePlayer({
   title,
   note,
   editable = false,
+  autoplay = false,
   onMove,
   onRemove,
   onToggleSide,
 }: MixtapePlayerProps) {
   const [powered, setPowered] = useState(true);
+  const [bootDone, setBootDone] = useState(false);
   const [rawIndex, setRawIndex] = useState(0);
   const wasPlayingRef = useRef(false);
+  const didAutoPlayRef = useRef(false);
 
   const currentIndex = tracks.length > 0 ? rawIndex % tracks.length : 0;
   const current = tracks[currentIndex];
   const videoId = current?.videoId ?? null;
+  const booting = autoplay && !bootDone;
 
   const handleNext = useCallback(() => {
     setRawIndex((prev) => {
@@ -105,11 +110,26 @@ export function MixtapePlayer({
     }
   }, [status.state, play]);
 
+  useEffect(() => {
+    if (!autoplay || didAutoPlayRef.current) return;
+    if (ready && current?.videoId) {
+      didAutoPlayRef.current = true;
+      play();
+    }
+  }, [autoplay, ready, current?.videoId, play]);
+
+  useEffect(() => {
+    if (!autoplay) return;
+    const t = setTimeout(() => setBootDone(true), 700);
+    return () => clearTimeout(t);
+  }, [autoplay]);
+
   return (
     <div className="mixtape-player">
       <div className="player-top">
         <TvScreen
           power={powered ? "on" : "off"}
+          booting={booting}
           playerContainerId={PLAYER_ID}
           nowPlaying={{
             videoId,
