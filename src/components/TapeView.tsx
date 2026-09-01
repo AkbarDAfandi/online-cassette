@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { Mixtape } from "@/lib/types";
-import { MixtapePlayer } from "./MixtapePlayer";
+import { TapePlayer } from "./TapePlayer";
 
 export function TapeView({ mixtape }: { mixtape: Mixtape }) {
   return (
@@ -22,11 +22,7 @@ export function TapeView({ mixtape }: { mixtape: Mixtape }) {
       </header>
 
       <main className="player-stage">
-        <MixtapePlayer
-          tracks={mixtape.tracks}
-          title={mixtape.title}
-          note={mixtape.note}
-        />
+        <TapePlayer mixtape={mixtape} />
       </main>
 
       <footer className="footer">

@@ -7,7 +7,7 @@ const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
 
 let client: SupabaseClient | null = null;
 
-function getClient(): SupabaseClient {
+export function getSupabase(): SupabaseClient {
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
     throw new Error(
       "Supabase is not configured. Set SUPABASE_URL and SUPABASE_ANON_KEY."
@@ -42,7 +42,7 @@ export async function createMixtape(input: {
   note?: string;
   tracks: Omit<Track, "order">[];
 }): Promise<Mixtape> {
-  const supabase = getClient();
+  const supabase = getSupabase();
   const id = randomUUID();
   const createdAt = new Date().toISOString();
 
@@ -75,7 +75,7 @@ export async function createMixtape(input: {
 }
 
 export async function getMixtape(id: string): Promise<Mixtape | null> {
-  const supabase = getClient();
+  const supabase = getSupabase();
 
   const { data, error } = await supabase
     .from("mixtapes")

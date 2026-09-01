@@ -4,14 +4,20 @@ export type PowerState = "on" | "off";
 
 export function CrtScreen({
   power,
+  booting = false,
   children,
 }: {
   power: PowerState;
+  booting?: boolean;
   children?: React.ReactNode;
 }) {
   return (
     <div className="crt-bezel">
-      <div className={`crt-screen ${power === "on" ? "is-on" : "is-off"}`}>
+      <div
+        className={`crt-screen ${power === "on" ? "is-on" : "is-off"} ${
+          booting ? "is-booting" : ""
+        }`}
+      >
         <div className="crt-screen-inner">{children}</div>
 
         <div className="crt-scanlines" aria-hidden="true" />
@@ -20,6 +26,7 @@ export function CrtScreen({
         <div className="crt-noise" aria-hidden="true" />
         <div className="crt-rolling-bar" aria-hidden="true" />
         <div className="crt-glass" aria-hidden="true" />
+        {booting && <div className="crt-static-flash" aria-hidden="true" />}
       </div>
     </div>
   );

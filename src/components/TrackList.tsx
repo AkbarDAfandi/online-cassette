@@ -44,7 +44,6 @@ export function TrackList({
       <div className="tracklist-side">
         <div className="tracklist-side-label">
           <span>SIDE <b>{label}</b></span>
-          <span>30:00</span>
         </div>
         <ul className="tracklist-list">
           {items.length === 0 &&
@@ -69,7 +68,7 @@ export function TrackList({
               </button>
             </li>
           )}
-          {items.map((track) => {
+          {items.map((track, i) => {
             const index = tracks.indexOf(track);
             const active = index === currentIndex;
             const moveSideLabel = label === "A" ? "Move to side B" : "Move to side A";
@@ -83,7 +82,7 @@ export function TrackList({
                   onClick={() => onSelect(index)}
                 >
                   <span className="tracklist-num">
-                    {String(track.order + 1).padStart(2, "0")}
+                    {String(i + 1).padStart(2, "0")}
                   </span>
                   <span className="tracklist-meta">
                     <span className="tracklist-title">{track.title}</span>

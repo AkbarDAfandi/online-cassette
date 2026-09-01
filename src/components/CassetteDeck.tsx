@@ -2,6 +2,7 @@
 
 import type { PlayerStatus } from "./player/useYouTubePlayer";
 import { Marquee } from "./Marquee";
+import { playSfx } from "@/lib/sfx";
 
 function formatDuration(seconds: number): string {
   if (!seconds || !isFinite(seconds)) return "--:--";
@@ -90,7 +91,10 @@ export function CassetteDeck({
       <div className="deck-play-control">
         <button
           className="deck-btn deck-btn-play"
-          onClick={onPlayPause}
+          onClick={() => {
+            playSfx("buttonA");
+            onPlayPause();
+          }}
           aria-label={playing ? "Pause" : "Play"}
         >
           {playing ? "❚❚" : "▶"}
@@ -98,11 +102,25 @@ export function CassetteDeck({
       </div>
 
       <div className="deck-transport">
-        <button className="deck-btn" onClick={onPrev} aria-label="Previous track">
+        <button
+          className="deck-btn"
+          onClick={() => {
+            playSfx("buttonB");
+            onPrev();
+          }}
+          aria-label="Previous track"
+        >
           <span className="deck-btn-icon">◀</span>
           <span className="deck-btn-label">BACK</span>
         </button>
-        <button className="deck-btn" onClick={onNext} aria-label="Next track">
+        <button
+          className="deck-btn"
+          onClick={() => {
+            playSfx("buttonB");
+            onNext();
+          }}
+          aria-label="Next track"
+        >
           <span className="deck-btn-icon">▶</span>
           <span className="deck-btn-label">NEXT</span>
         </button>
