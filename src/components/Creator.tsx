@@ -28,9 +28,6 @@ export function Creator() {
   const [error, setError] = useState<string | null>(null);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
 
-  const sideACount = tracks.filter((t) => t.side === "A").length;
-  const sideBCount = tracks.filter((t) => t.side === "B").length;
-
   const runSearch = useCallback(async () => {
     const q = query.trim();
     if (!q) return;
@@ -58,12 +55,9 @@ export function Creator() {
     const aFull = sideIsFull("A");
     const bFull = sideIsFull("B");
     if (aFull && bFull) return;
-    const aCount = tracks.filter((t) => t.side === "A").length;
-    const bCount = tracks.filter((t) => t.side === "B").length;
     let side: "A" | "B";
-    if (aFull) side = "B";
-    else if (bFull) side = "A";
-    else side = aCount <= bCount ? "A" : "B";
+    if (!aFull) side = "A";
+    else side = "B";
     const track: Track = {
       order: tracks.length,
       side,
@@ -263,7 +257,6 @@ export function Creator() {
 
             <div className="share-panel-meta">
               <span>{tracks.length}/{MAX_TRACKS} tracks loaded</span>
-              <span>A {sideACount}/{MAX_PER_SIDE} · B {sideBCount}/{MAX_PER_SIDE}</span>
             </div>
 
             {error && <p className="error-text">{error}</p>}
